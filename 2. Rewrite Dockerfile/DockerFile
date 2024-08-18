@@ -1,0 +1,9 @@
+FROM ubuntu:20.04
+COPY ./src /app 
+RUN apt-get update -y && \
+    apt-get install -y nodejs && \
+    apt install npm && \
+    rm -rf /var/lib/apt/lists*
+WORKDIR /app
+ENTRYPOINT ["npm"]
+CMD ["run", "prod"]

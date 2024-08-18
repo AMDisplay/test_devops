@@ -1,0 +1,6 @@
+- name: install and configuration Prometheus and PostgreSQL
+  hosts: Debian_11
+  become: yes
+  roles:
+   - { role : prometheus, when: ansible_distribution == "Debian" and ansible_distribution_major_version == "11" }
+   - { role : postgresql, when: ansible_distribution == "Debian" and ansible_distribution_major_version == "11" }

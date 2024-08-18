@@ -1,0 +1,85 @@
+---
+- name: install sudo package
+  package:
+    name: sudo
+    state: latest
+
+- name: Download Prometheus
+  get_url:
+    url: "{{url_for_prometheus}}"
+    dest: "{{src_path_prometheus}}"
+- name: Unpack gunzip archive
+  unarchive:
+    src: "{{src_path_prometheus}}"
+    dest: /tmp
+    remote_src: yes
+
+- name: Delete archive
+  file:
+    path: "{{src_path_prometheus}}"
+    state: absent
+
+- name: Add user for prometheus
+  user:
+    name: prometheus
+    shell: /usr/sbin/nologin
+    create_home: false
+    system: yes
+
+- name: Create directoty /etc/prometheus and /var/lib/prometheus
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '755'
+  loop:
+    - /etc/prometheus
+    - /var/lib/prometheus
+
+- name: Copy files prometheus and promtool to /usr/local/bin
+  copy:
+    src: "{{ item }}"
+    dest: /usr/local/bin/
+    mode: '755'
+    owner: prometheus
+    group: prometheus
+    remote_src: true
+  loop:
+    - "{{ tmp_path_to_prometheus }}/prometheus"
+    - "{{ tmp_path_to_prometheus }}/promtool"
+
+- name: Copy files and directory to /etc/prometheus
+  copy:
+    src: "{{ item }}"
+    dest: /etc/prometheus/
+    owner: prometheus
+    group: prometheus
+    mode: '644'
+    remote_src: true
+  loop:
+    - "{{ tmp_path_to_prometheus }}/console_libraries"
+    - "{{ tmp_path_to_prometheus }}/consoles"
+    - "{{ tmp_path_to_prometheus }}/prometheus.yml"
+
+- name: Change prometheus yml
+  template:
+    src: prometheus_conf.j2
+    dest: /etc/prometheus/prometheus.yml
+    mode: '644'
+
+- name: Change prometheus service
+  template:
+    src: prometheus_unit.j2
+    dest: /etc/systemd/system/prometheus.service
+    mode: '644'
+
+- name: daemon-reload
+  command: systemctl daemon-reload
+
+- name: Start Prometheus
+  systemd:
+    name: prometheus
+    state: started
+    enabled: yes
+

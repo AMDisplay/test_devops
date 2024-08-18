@@ -1,0 +1,4 @@
+---
+url_for_prometheus: https://github.com/prometheus/prometheus/releases/download/v2.54.0/prometheus-2.54.0.linux-amd64.tar.gz
+src_path_prometheus: /tmp/prometheus-2.54.0.linux-amd64.tar.gz
+tmp_path_to_prometheus: /tmp/prometheus-2.54.0.linux-amd64
